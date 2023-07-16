@@ -1,4 +1,6 @@
 import logging
+import sys
+import os
 from pytube import YouTube
 from moviepy.editor import AudioFileClip
 import whisper
@@ -19,14 +21,14 @@ def download_video(youtube_url, output_path):
 def extract_audio(video_path, audio_path):
     logging.info("Extracting audio...")
     video = AudioFileClip(video_path)
-    video.write_audiofile(audio_path)
+    video.audio.write_audiofile(audio_path)
     logging.info("Audio extraction complete.")
 
 # Transcribe audio using Whisper ASR
 def transcribe_audio(audio_path):
     logging.info("Transcribing audio...")
     model = whisper.load_model("tiny")
-    result = model.transcribe(audio_path,fp16=False)
+    result = model.transcribe(audio_path)
     logging.info("Transcription complete.")
     return result["text"]
 
@@ -38,14 +40,16 @@ def save_transcript(transcript, filename):
     logging.info("Transcript saved.")
 
 if __name__ == "__main__":
-    youtube_url = "https://www.youtube.com/watch?v=2v8lq_vnklI"
-    output_path = "./output"
-    audio_path = output_path + "/audio.mp3"
-    transcript_filename = "transcript.txt"
+    youtube_url = sys.argv[1]  # get YouTube URL from command line argument
+    video_id = YouTube(youtube_url).video_id
+    output_path = os.path.join(os.getcwd(), f"youtube-{video_id}")  # output dir in current directory
+    os.makedirs(output_path, exist_ok=True)  # create output dir if it doesn't exist
+    audio_path = os.path.join(output_path, "audio.mp3")
+    transcript_filename = os.path.join(output_path, "transcript.txt")
 
     # Download video
     video_filename = download_video(youtube_url, output_path)
-    video_path = output_path + "/" + video_filename
+    video_path = os.path.join(output_path, video_filename)
 
     # Extract audio from the video
     extract_audio(video_path, audio_path)
