@@ -21,14 +21,16 @@ def download_video(youtube_url, output_path):
 def extract_audio(video_path, audio_path):
     logging.info("Extracting audio...")
     video = AudioFileClip(video_path)
-    video.audio.write_audiofile(audio_path)
+    video.write_audiofile(audio_path)
     logging.info("Audio extraction complete.")
 
 # Transcribe audio using Whisper ASR
 def transcribe_audio(audio_path):
     logging.info("Transcribing audio...")
+
     model = whisper.load_model("tiny")
-    result = model.transcribe(audio_path)
+    result =model.transcribe(audio_path, fp16=False, initial_prompt="Umm, let me think like, hmm... Okay, here's what I'm, like, thinking.")
+
     logging.info("Transcription complete.")
     return result["text"]
 
